@@ -1,13 +1,55 @@
 <script setup>
+import { ref, reactive } from "vue";
 import Presupuesto from "./components/Presupuesto.vue";
 import ControlPresupuesto from "./components/ControlPresupuesto.vue";
-import {ref} from 'vue'
+import Modal from "./components/Modal.vue";
+import iconoNuevoGasto from "./assets/img/nuevo-gasto.svg";
 
 const presupuesto = ref(0);
+const disponible = ref(0);
 
-const definirPresupuesto =(cantidad)=>{
-  presupuesto.value=cantidad
+const modal = reactive({
+  mostrar: false,
+  animar:false
+})
+
+const gasto= reactive ({
+  nombre:'',
+  cantidad: '',
+  categoria: '',
+  id: null,
+  fecha: Date.now()
+})
+
+const gastos = ref([])
+
+const definirPresupuesto = (cantidad) => {
+  presupuesto.value = cantidad;
+  disponible.value = cantidad;
+};
+
+const mostrarModal=()=>{
+  modal.mostrar=true
+  setTimeout(() => {
+    modal.animar=true  
+  }, 300);
+  
 }
+const ocultarModal=()=>{
+  modal.animar=false;
+  setTimeout(() => {
+    modal.mostrar=false;
+  }, 300)
+  
+}
+
+const guardarGasto = () =>{
+  gastos.value.push({
+    ...gasto,
+    id:123,
+  })
+}
+
 </script>
 
 <template>
@@ -15,14 +57,36 @@ const definirPresupuesto =(cantidad)=>{
     <header>
       <h1>Planificador de Gastos</h1>
       <div class="contenedor-header contenedor sombra">
-        <Presupuesto 
-        v-if="presupuesto===0"
-        @definir-presupuesto="definirPresupuesto"
+        <Presupuesto
+          v-if="presupuesto === 0"
+          @definir-presupuesto="definirPresupuesto"
         />
         <ControlPresupuesto
-        v-else/>
+          v-else
+          :presupuesto="presupuesto"
+          :disponible="disponible"
+        />
       </div>
     </header>
+
+    <main v-if="presupuesto>0">
+      <div class="crear-gasto">
+        <img :src="iconoNuevoGasto" 
+        alt="icono-nuevo-gasto"
+        @click="mostrarModal" 
+        />
+      </div>
+
+      <Modal
+      v-if="modal.mostrar"
+      @ocultar-modal="ocultarModal"
+      @guardar-gasto="guardarGasto"
+      :modal="modal"
+      v-model:nombre="gasto.nombre"
+      v-model:cantidad="gasto.cantidad"
+      v-model:categoria="gasto.categoria"
+      />
+    </main>
   </div>
 </template>
 
@@ -72,13 +136,24 @@ header h1 {
 }
 .contenedor-header {
   margin-top: -5rem;
-   transform: translateY(5rem);
+  transform: translateY(5rem);
   padding: 5rem;
 }
 .sombra {
-  box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.1);
+  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
   background-color: var(--blanco);
   border-radius: 1.2rem;
   padding: 5rem;
 }
+
+.crear-gasto{
+position: fixed;
+bottom: 5rem;
+right: 5rem;
+}
+.crear-gasto img{
+width: 5rem;
+cursor: pointer;
+}
+
 </style>
